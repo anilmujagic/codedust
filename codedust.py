@@ -158,7 +158,7 @@ def inspect_line(prev_line, curr_line, next_line, file_extension, rules):
 
         if not is_line_empty(prev_line) \
         and line_indent(curr_line) > line_indent(prev_line) \
-        and line_indent(curr_line) - line_indent(prev_line) != indent_size:
+        and line_indent(curr_line) - line_indent(prev_line) > indent_size:
             yield f"Don't indent for more than one level ({indent_size} spaces) at a time."
 
         # Length
