@@ -87,11 +87,15 @@ def load_rules(config_file, extensions):
     for ext in extensions:
         extension_rules_from_file = config[ext] if ext in config else {}
         rules_per_extension[ext] = {**default_rules, **extension_rules_from_file}
-        for rule in rules_per_extension[ext].keys():
-            try:
-                rules_per_extension[ext][rule] = int(rules_per_extension[ext][rule])
-            except:
-                pass # Just a best effort try - if it's a string, then it should stay so.
+        for rule in list(rules_per_extension[ext].keys()):
+            if re.match(r"CD[0-9]{4}", rule.upper()):
+                bool_value = False if rules_per_extension[ext].pop(rule).lower() == "disable" else True
+                rules_per_extension[ext][rule.upper()] = bool_value
+            else:
+                try:
+                    rules_per_extension[ext][rule] = int(rules_per_extension[ext][rule])
+                except:
+                    pass # Just a best effort try - if it's a string, then it should stay so.
 
     return rules_per_extension
 
@@ -101,88 +105,109 @@ def is_line_empty(line):
 def line_indent(line):
     return re.match(r' *', line).end()
 
-def inspect_line(prev_line, curr_line, next_line, file_extension, rules):
+def inspect_line(prev_line, curr_line, next_line, rules):
     # Empty Lines
     if is_line_empty(curr_line) and prev_line == None:
-        yield "There should be no empty lines at the start of the file."
+        if rules.get("CD0101") != False:
+            yield ("CD0101", "There should be no empty lines at the start of the file.")
 
     if is_line_empty(curr_line) and next_line == None:
-        yield "There should be no empty lines at the end of the file."
+        if rules.get("CD0102") != False:
+            yield ("CD0102", "There should be no empty lines at the end of the file.")
 
     if not curr_line.endswith("\n") and next_line == None:
-        yield "There should be a line break at the end of the file."
+        if rules.get("CD0103") != False:
+            yield ("CD0103", "There should be a line break at the end of the file.")
 
     if curr_line != None and prev_line != None:
         if is_line_empty(prev_line) and is_line_empty(curr_line):
-            yield "There should be no multiple consecutive empty lines."
+            if rules.get("CD0104") != False:
+                yield ("CD0104", "There should be no multiple consecutive empty lines.")
 
         # Spaces
         if "  " in curr_line.strip(): # CodeDust: SKIP
-            yield "There should be no multiple consecutive spaces in a line."
+            if rules.get("CD0201") != False:
+                yield ("CD0201", "There should be no multiple consecutive spaces in a line.")
 
         if curr_line.endswith(" \n"):
-            yield "There should be no spaces at the end of a line."
+            if rules.get("CD0202") != False:
+                yield ("CD0202", "There should be no spaces at the end of a line.")
 
         if " ," in curr_line.strip(): # CodeDust: SKIP
-            yield "There should be no space before comma."
+            if rules.get("CD0203") != False:
+                yield ("CD0203", "There should be no space before comma.")
 
         if " ;" in curr_line.strip(): # CodeDust: SKIP
-            yield "There should be no space before semicolon."
+            if rules.get("CD0204") != False:
+                yield ("CD0204", "There should be no space before semicolon.")
 
         if "( " in curr_line.strip(): # CodeDust: SKIP
-            yield "There should be no space after opening parentheses."
+            if rules.get("CD0205") != False:
+                yield ("CD0205", "There should be no space after opening parentheses.")
 
         if " )" in curr_line.strip(): # CodeDust: SKIP
-            yield "There should be no space before closing parentheses."
+            if rules.get("CD0206") != False:
+                yield ("CD0206", "There should be no space before closing parentheses.")
 
         if re.search(r'\,[\w\(]', curr_line):
-            yield "There should be a space after comma."
+            if rules.get("CD0207") != False:
+                yield ("CD0207", "There should be a space after comma.")
 
         if re.search(r'\;[\w\(]', curr_line):
-            yield "There should be a space after semicolon."
+            if rules.get("CD0208") != False:
+                yield ("CD0208", "There should be a space after semicolon.")
 
         if re.search(r'[a-z0-9\)\]\}\"\']\=', curr_line) and "====" not in curr_line:
-            yield "There should be a space before equal sign."
+            if rules.get("CD0209") != False:
+                yield ("CD0209", "There should be a space before equal sign.")
 
         if re.search(r'\=[a-z0-9\(\[\{\"\']', curr_line) and "====" not in curr_line: # CodeDust: SKIP
-            yield "There should be a space after equal sign."
+            if rules.get("CD0210") != False:
+                yield ("CD0210", "There should be a space after equal sign.")
 
         # Indentation
-        indent_size = rules[file_extension]["indent_size"]
+        indent_size = rules["indent_size"]
 
         if "\t" in curr_line:
-            yield f"Don't use tabs, use {indent_size} spaces."
+            if rules.get("CD0301") != False:
+                yield ("CD0301", f"Don't use tabs, use {indent_size} spaces.")
 
         if line_indent(curr_line) % indent_size != 0:
-            yield f"Use {indent_size} spaces per indentation level."
+            if rules.get("CD0302") != False:
+                yield ("CD0302", f"Use {indent_size} spaces per indentation level.")
 
         if not is_line_empty(prev_line) \
         and line_indent(curr_line) > line_indent(prev_line) \
         and line_indent(curr_line) - line_indent(prev_line) > indent_size:
-            yield f"Don't indent for more than one level ({indent_size} spaces) at a time."
+            if rules.get("CD0303") != False:
+                yield ("CD0303", f"Don't indent for more than one level ({indent_size} spaces) at a time.")
 
         # Length
-        max_line_length = rules[file_extension]["max_line_length"]
+        max_line_length = rules["max_line_length"]
 
         if len(curr_line.rstrip()) > max_line_length:
-            yield f"Line should not be longer than {max_line_length} characters."
+            if rules.get("CD0401") != False:
+                yield ("CD0401", f"Line should not be longer than {max_line_length} characters.")
 
-        section_header_length = rules[file_extension]["section_header_length"]
+        section_header_length = rules["section_header_length"]
 
         is_section_header = False
         if re.search(r'(^\#+$)|(^\/+$)|(^\-+$)', curr_line.strip()): # CodeDust: SKIP
             is_section_header = True
             if len(curr_line.strip()) != section_header_length:
-                yield f"Section header should be {section_header_length} characters long."
+                if rules.get("CD0402") != False:
+                    yield ("CD0402", f"Section header should be {section_header_length} characters long.")
 
         # Comments
-        line_comment = rules[file_extension]["line_comment"]
+        line_comment = rules["line_comment"]
         if line_comment and len(line_comment) and line_comment in curr_line and not is_section_header:
             if not f"{line_comment} " in curr_line:
-                yield "There should be a space between comment syntax characters and comment text."
+                if rules.get("CD0501") != False:
+                    yield ("CD0501", "There should be a space between comment syntax characters and comment text.")
 
             if not f" {line_comment}" in curr_line and not curr_line.startswith(f"{line_comment} "):
-                yield "There should be a space before comment syntax characters."
+                if rules.get("CD0502") != False:
+                    yield ("CD0502", "There should be a space before comment syntax characters.")
 
 ####################################################################################################
 # Execution
@@ -205,7 +230,7 @@ def should_ignore(file_path, ignored_patterns):
 
     return False
 
-def inspect_file(file_path, file_extension, rules):
+def inspect_file(file_path, rules):
     try:
         with open(file_path) as file:
             lines = file.readlines()
@@ -233,8 +258,8 @@ def inspect_file(file_path, file_extension, rules):
         if " CodeDust: SKIP\n" in cl or not code_dust_enabled:
             continue
 
-        for issue in inspect_line(pl, cl, nl, file_extension, rules):
-            yield (line_number, issue)
+        for issue_code, issue_message in inspect_line(pl, cl, nl, rules):
+            yield (line_number, issue_code, issue_message)
 
     if code_dust_disabled_in_line > 0:
         yield (code_dust_disabled_in_line, "CodeDust should be re-enabled afterwards.")
@@ -254,9 +279,9 @@ if __name__ == "__main__":
     issue_count = 0
     for path in paths:
         for file_path, file_extension in get_files(path, extensions, ignored_patterns):
-            for line_number, issue in inspect_file(file_path, file_extension, rules):
+            for line_number, issue_code, issue_message in inspect_file(file_path, rules[file_extension]):
                 issue_count += 1
-                print(f"{file_path} [{line_number}]: {issue}")
+                print(f"{file_path} [{line_number}]: ({issue_code}) {issue_message}")
 
     print(f"{issue_count} issue(s)")
     if issue_count > 0:

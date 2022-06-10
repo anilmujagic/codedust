@@ -35,6 +35,10 @@ indent_size = 2
 
 [py]
 max_line_length = 80
+
+[xml]
+CD0209 = disable
+CD0210 = disable
 ```
 
 A [sample config file](codedust.cfg) is part of this repository.
