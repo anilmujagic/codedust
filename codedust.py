@@ -205,7 +205,7 @@ def inspect_line(prev_line, curr_line, next_line, rules):
                 if rules.get("CD0501") != False:
                     yield ("CD0501", "There should be a space between comment syntax characters and comment text.")
 
-            if not f" {line_comment}" in curr_line and not curr_line.startswith(f"{line_comment} "):
+            if not f" {line_comment}" in curr_line and not curr_line.startswith(line_comment):
                 if rules.get("CD0502") != False:
                     yield ("CD0502", "There should be a space before comment syntax characters.")
 
