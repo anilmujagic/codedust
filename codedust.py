@@ -124,6 +124,14 @@ def inspect_line(prev_line, curr_line, next_line, rules):
             if rules.get("CD0104") != False:
                 yield ("CD0104", "There should be no multiple consecutive empty lines.")
 
+        if is_line_empty(curr_line) and re.search(r'[\{\[\(\<]$', prev_line.strip()):
+            if rules.get("CD0105") != False:
+                yield ("CD0105", "There should be no empty lines at the start of a parenthesis block.")
+
+        if is_line_empty(curr_line) and re.search(r'^[\}\]\)\>]', next_line.strip()):
+            if rules.get("CD0106") != False:
+                yield ("CD0106", "There should be no empty lines at the end of a parenthesis block.")
+
         # Spaces
         if "  " in curr_line.strip(): # CodeDust: SKIP
             if rules.get("CD0201") != False:
