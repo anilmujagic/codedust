@@ -128,7 +128,7 @@ def inspect_line(prev_line, curr_line, next_line, rules):
             if rules.get("CD0105") != False:
                 yield ("CD0105", "There should be no empty lines at the start of a parenthesis block.")
 
-        if is_line_empty(curr_line) and re.search(r'^[\}\]\)\>]', next_line.strip()):
+        if is_line_empty(curr_line) and next_line and re.search(r'^[\}\]\)\>]', next_line.strip()):
             if rules.get("CD0106") != False:
                 yield ("CD0106", "There should be no empty lines at the end of a parenthesis block.")
 
