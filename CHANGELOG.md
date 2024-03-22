@@ -1,6 +1,11 @@
 # Changelog
 
 
+## 0.3.2 (2024-03-22)
+
+- Don't treat empty line comments as section headers.
+
+
 ## 0.3.1 (2023-06-04)
 
 - Fix the rule CD0106.

@@ -198,17 +198,22 @@ def inspect_line(prev_line, curr_line, next_line, rules):
                 yield ("CD0401", f"Line should not be longer than {max_line_length} characters.")
 
         section_header_length = rules["section_header_length"]
+        line_comment = rules["line_comment"]
 
         is_section_header = False
-        if re.search(r'(^\#+$)|(^\/+$)|(^\-+$)', curr_line.strip()): # CodeDust: SKIP
+        comment_pattern = r'(^\#+$)|(^\/+$)|(^\-+$)' # CodeDust: SKIP
+        if re.search(comment_pattern, curr_line.strip()) and curr_line.strip() != line_comment:
             is_section_header = True
             if len(curr_line.strip()) != section_header_length:
                 if rules.get("CD0402") != False:
                     yield ("CD0402", f"Section header should be {section_header_length} characters long.")
 
         # Comments
-        line_comment = rules["line_comment"]
-        if line_comment and len(line_comment) and line_comment in curr_line and not is_section_header:
+        if curr_line.strip() != line_comment \
+        and line_comment \
+        and len(line_comment) \
+        and line_comment in curr_line \
+        and not is_section_header:
             if not f"{line_comment} " in curr_line:
                 if rules.get("CD0501") != False:
                     yield ("CD0501", "There should be a space between comment syntax characters and comment text.")
