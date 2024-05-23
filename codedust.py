@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3 # CodeDust: SKIP
 
 import argparse
 import configparser
@@ -119,12 +119,12 @@ def inspect_line(prev_line, curr_line, next_line, rules):
         if rules.get("CD0103") != False:
             yield ("CD0103", "There should be a line break at the end of the file.")
 
-    if curr_line != None and prev_line != None:
-        if is_line_empty(prev_line) and is_line_empty(curr_line):
+    if curr_line != None:
+        if prev_line != None and is_line_empty(prev_line) and is_line_empty(curr_line):
             if rules.get("CD0104") != False:
                 yield ("CD0104", "There should be no multiple consecutive empty lines.")
 
-        if is_line_empty(curr_line) and re.search(r'[\{\[\(\<]$', prev_line.strip()):
+        if prev_line != None and is_line_empty(curr_line) and re.search(r'[\{\[\(\<]$', prev_line.strip()):
             if rules.get("CD0105") != False:
                 yield ("CD0105", "There should be no empty lines at the start of a parenthesis block.")
 
@@ -184,7 +184,8 @@ def inspect_line(prev_line, curr_line, next_line, rules):
             if rules.get("CD0302") != False:
                 yield ("CD0302", f"Use {indent_size} spaces per indentation level.")
 
-        if not is_line_empty(prev_line) \
+        if prev_line != None \
+        and not is_line_empty(prev_line) \
         and line_indent(curr_line) > line_indent(prev_line) \
         and line_indent(curr_line) - line_indent(prev_line) > indent_size:
             if rules.get("CD0303") != False:

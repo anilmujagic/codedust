@@ -1,6 +1,11 @@
 # Changelog
 
 
+## 0.3.3 (2024-05-23)
+
+- Fix the condition which skipped inspecting the first line.
+
+
 ## 0.3.2 (2024-03-22)
 
 - Don't treat empty line comments as section headers.
