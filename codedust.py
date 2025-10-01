@@ -105,7 +105,19 @@ def is_line_empty(line):
 def line_indent(line):
     return re.match(r' *', line).end()
 
+def is_line_comment(line, line_comment):
+    return line_comment and line.strip().startswith(line_comment)
+
+def is_section_header(line, line_comment):
+    comment_pattern = r'(^\#+$)|(^\/+$)|(^\-+$)' # CodeDust: SKIP
+    return re.search(comment_pattern, line.strip()) and line.strip() != line_comment
+
 def inspect_line(prev_line, curr_line, next_line, rules):
+    indent_size = rules["indent_size"]
+    max_line_length = rules["max_line_length"]
+    line_comment = rules["line_comment"]
+    section_header_length = rules["section_header_length"]
+
     # Empty Lines
     if is_line_empty(curr_line) and prev_line == None:
         if rules.get("CD0101") != False:
@@ -131,6 +143,12 @@ def inspect_line(prev_line, curr_line, next_line, rules):
         if is_line_empty(curr_line) and next_line and re.search(r'^[\}\]\)\>]', next_line.strip()):
             if rules.get("CD0106") != False:
                 yield ("CD0106", "There should be no empty lines at the end of a parenthesis block.")
+
+        if prev_line != None and is_line_empty(curr_line):
+            if is_section_header(prev_line, line_comment):
+                if not (next_line and is_line_comment(next_line, line_comment)):
+                    if rules.get("CD0107") != False:
+                        yield ("CD0107", "There should be no empty lines after the section header.")
 
         # Spaces
         if "  " in curr_line.strip(): # CodeDust: SKIP
@@ -174,8 +192,6 @@ def inspect_line(prev_line, curr_line, next_line, rules):
                 yield ("CD0210", "There should be a space after equal sign.")
 
         # Indentation
-        indent_size = rules["indent_size"]
-
         if "\t" in curr_line:
             if rules.get("CD0301") != False:
                 yield ("CD0301", f"Don't use tabs, use {indent_size} spaces.")
@@ -192,19 +208,12 @@ def inspect_line(prev_line, curr_line, next_line, rules):
                 yield ("CD0303", f"Don't indent for more than one level ({indent_size} spaces) at a time.")
 
         # Length
-        max_line_length = rules["max_line_length"]
-
         if len(curr_line.rstrip()) > max_line_length:
             if rules.get("CD0401") != False:
                 yield ("CD0401", f"Line should not be longer than {max_line_length} characters.")
 
-        section_header_length = rules["section_header_length"]
-        line_comment = rules["line_comment"]
-
-        is_section_header = False
-        comment_pattern = r'(^\#+$)|(^\/+$)|(^\-+$)' # CodeDust: SKIP
-        if re.search(comment_pattern, curr_line.strip()) and curr_line.strip() != line_comment:
-            is_section_header = True
+        current_is_section_header = is_section_header(curr_line, line_comment)
+        if current_is_section_header:
             if len(curr_line.strip()) != section_header_length:
                 if rules.get("CD0402") != False:
                     yield ("CD0402", f"Section header should be {section_header_length} characters long.")
@@ -214,12 +223,12 @@ def inspect_line(prev_line, curr_line, next_line, rules):
         and line_comment \
         and len(line_comment) \
         and line_comment in curr_line \
-        and not is_section_header:
+        and not current_is_section_header:
             if not f"{line_comment} " in curr_line:
                 if rules.get("CD0501") != False:
                     yield ("CD0501", "There should be a space between comment syntax characters and comment text.")
 
-            if not f" {line_comment}" in curr_line and not curr_line.startswith(line_comment):
+            if not f" {line_comment}" in curr_line and not is_line_comment(curr_line, line_comment):
                 if rules.get("CD0502") != False:
                     yield ("CD0502", "There should be a space before comment syntax characters.")
 
