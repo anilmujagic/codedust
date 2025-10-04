@@ -1,6 +1,11 @@
 # Changelog
 
 
+## 0.4.0 (2025-10-05)
+
+- Add rule CD0107 for preventing empty lines after a section header.
+
+
 ## 0.3.3 (2024-05-23)
 
 - Fix the condition which skipped inspecting the first line.
