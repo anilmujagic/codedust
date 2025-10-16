@@ -227,7 +227,8 @@ def inspect_line(prev_line, curr_line, next_line, rules):
         and line_comment in curr_line \
         and not current_is_section_header:
             if not f"{line_comment} " in curr_line:
-                if rules.get("CD0501") != False:
+                is_shebang = prev_line is None and curr_line.startswith("#!")
+                if not is_shebang and rules.get("CD0501") != False:
                     yield ("CD0501", "There should be a space between comment syntax characters and comment text.")
 
             if not f" {line_comment}" in curr_line and not is_line_comment(curr_line, line_comment):

@@ -948,6 +948,18 @@ class TestCodeDustInspections(unittest.TestCase):
         # ASSERT
         self.assertNotIn("CD0501", [i[0] for i in issues])
 
+    def test_cd0501_not_triggered_for_shebang(self):
+        # ARRANGE
+        prev_line = None
+        curr_line = "#!/bin/bash\n"
+        next_line = "echo hello\n"
+
+        # ACT
+        issues = self.get_issues(prev_line, curr_line, next_line)
+
+        # ASSERT
+        self.assertNotIn("CD0501", [i[0] for i in issues])
+
     ####################################################################################################
     # CD0502: Missing space before inline comment
     ####################################################################################################
