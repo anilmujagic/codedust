@@ -1,0 +1,11 @@
+name: code-inspection
+
+on: [push]
+
+jobs:
+  codedust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: codedust.sh
+        shell: bash
