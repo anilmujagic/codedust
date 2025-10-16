@@ -288,7 +288,7 @@ def inspect_file(file_path, rules):
             yield (line_number, issue_code, issue_message)
 
     if code_dust_disabled_in_line > 0:
-        yield (code_dust_disabled_in_line, "CodeDust should be re-enabled afterwards.")
+        yield (code_dust_disabled_in_line, "⚠️", "CodeDust should be re-enabled afterwards.")
 
 ####################################################################################################
 # Composition
