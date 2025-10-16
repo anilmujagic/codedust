@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 0.5.0 (2025-10-15)
+
+- Don't detect the section headers if the line_comment is not defined.
+- Don't treat shebangs as comments.
+- Fix the issue with the tuple mismatch on adding the reminder to reactivate the CodeDust.
+
+
 ## 0.4.0 (2025-10-05)
 
 - Add rule CD0107 for preventing empty lines after a section header.
