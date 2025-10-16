@@ -109,6 +109,8 @@ def is_line_comment(line, line_comment):
     return line_comment and line.strip().startswith(line_comment)
 
 def is_section_header(line, line_comment):
+    if not line_comment:
+        return False
     comment_pattern = r'(^\#+$)|(^\/+$)|(^\-+$)' # CodeDust: SKIP
     return re.search(comment_pattern, line.strip()) and line.strip() != line_comment
 
